@@ -1,10 +1,8 @@
 import os
 import requests
-import io
 import pandas as pd
 import fitz  # PyMuPDF
 
-# Folder to save downloads (optional)
 os.makedirs("downloads", exist_ok=True)
 
 def download_file(url):
@@ -23,45 +21,32 @@ def download_file(url):
         return None
 
 def handle_pdf(path):
-    try:
-        with fitz.open(path) as doc:
-            all_text = ""
-            for page in doc:
-                all_text += page.get_text()
-        print(f"📄 PDF extracted from {os.path.basename(path)}:\n")
-        print(all_text[:1000])  # Limit output for readability
-    except Exception as e:
-        print(f"❌ Error reading PDF {path}: {e}")
+    with fitz.open(path) as doc:
+        all_text = ""
+        for page in doc:
+            all_text += page.get_text()
+    return all_text
 
 def handle_excel(path):
-    try:
-        df = pd.read_excel(path)
-        print(f"📊 Excel data from {os.path.basename(path)}:\n")
-        print(df.head())
-    except Exception as e:
-        print(f"❌ Error reading Excel {path}: {e}")
+    df = pd.read_excel(path)
+    return df
 
 def process_file(path):
     if path.lower().endswith(".pdf"):
-        handle_pdf(path)
+        text = handle_pdf(path)
+        return ("pdf", text)
     elif path.lower().endswith((".xlsx", ".xls")):
-        handle_excel(path)
+        df = handle_excel(path)
+        return ("excel", df)
     else:
         print(f"⚠️ Unsupported file type: {path}")
+        return (None, None)
 
-def main():
-    print("📥 Enter links to PDFs or Excel files (one per line). Type 'done' to finish:")
-    urls = []
-    while True:
-        link = input("URL: ").strip()
-        if link.lower() == "done":
-            break
-        urls.append(link)
-    
+def process_urls(urls):
+    results = []
     for url in urls:
         path = download_file(url)
         if path:
-            process_file(path)
-
-if __name__ == "__main__":
-    main()
+            filetype, data = process_file(path)
+            results.append((filetype, path, data))
+    return results
