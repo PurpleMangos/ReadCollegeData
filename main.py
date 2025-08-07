@@ -1,4 +1,4 @@
-import data_importer
+import data_import
 
 def main():
     print("📥 Enter links to PDFs or Excel files (one per line). Type 'done' to finish:")
@@ -9,7 +9,7 @@ def main():
             break
         urls.append(link)
 
-    results = data_importer.process_urls(urls)
+    results = data_import.process_urls(urls)
 
     for filetype, path, data in results:
         print(f"\n=== {path} ===")
